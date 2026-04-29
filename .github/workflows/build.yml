@@ -13,19 +13,16 @@ jobs:
           dotnet-version: '8.0.x'
       - name: Extract source
         run: unzip UIInfoSuite2Alt-mobile-patch.zip
-      - name: Download SMAPI
-        run: |
-          mkdir -p /tmp/sdv/smapi-internal
-          touch "/tmp/sdv/Stardew Valley.dll"
-          wget -q https://github.com/Pathoschild/SMAPI/releases/download/4.1.10/SMAPI-4.1.10-installer.zip -O /tmp/smapi.zip
-          unzip -q /tmp/smapi.zip -d /tmp/smapi
-          find /tmp/smapi -name "StardewModdingAPI.dll" | head -1 | xargs -I{} cp {} /tmp/sdv/
-          find /tmp/smapi -name "*.dll" | xargs -I{} cp {} /tmp/sdv/smapi-internal/ 2>/dev/null || true
-      - name: Build
+      - name: Disable game path check
         run: |
           cd UIInfoSuite2Alt-main/UIInfoSuite2Alt
-          dotnet build -c Release /p:GamePath=/tmp/sdv
+          sed -i 's|net6.0-windows|net6.0|g' UIInfoSuite2Alt.csproj
+          dotnet add package Pathoschild.Stardew.ModBuildConfig --version 4.4.0 || true
+      - name: Build ignoring game check
+        run: |
+          cd UIInfoSuite2Alt-main/UIInfoSuite2Alt
+          dotnet build -c Release /p:GamePath=/tmp/sdv /p:EnableGameDeployment=false /p:IgnoreGameDirectory=true
       - uses: actions/upload-artifact@v4
         with:
           name: UIInfoSuite2Alt-mobile
-          path: "UIInfoSuite2Alt-main/UIInfoSuite2Alt/bin/Release/**/*.dll"
+          path: "UIInfoSuite2Alt-main/UIInfoSuite2Alt/bin/**/*.dll"
