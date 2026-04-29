@@ -1,0 +1,27 @@
+name: Build UIInfoSuite2Alt
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Extract source
+        run: unzip UIInfoSuite2Alt-mobile-patch.zip
+      - name: Get SMAPI via NuGet
+        run: cd UIInfoSuite2Alt-main/UIInfoSuite2Alt && dotnet restore
+      - name: Build
+        run: |
+          mkdir -p /tmp/sdv
+          touch "/tmp/sdv/Stardew Valley.dll"
+          cd UIInfoSuite2Alt-main/UIInfoSuite2Alt
+          dotnet build -c Release /p:GamePath=/tmp/sdv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: UIInfoSuite2Alt-mobile
+          path: "UIInfoSuite2Alt-main/UIInfoSuite2Alt/bin/Release/**/*.dll"
