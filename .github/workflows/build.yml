@@ -13,12 +13,16 @@ jobs:
           dotnet-version: '8.0.x'
       - name: Extract source
         run: unzip UIInfoSuite2Alt-mobile-patch.zip
-      - name: Get SMAPI via NuGet
-        run: cd UIInfoSuite2Alt-main/UIInfoSuite2Alt && dotnet restore
+      - name: Download SMAPI
+        run: |
+          mkdir -p /tmp/sdv/smapi-internal
+          touch "/tmp/sdv/Stardew Valley.dll"
+          wget -q https://github.com/Pathoschild/SMAPI/releases/download/4.1.10/SMAPI-4.1.10-installer.zip -O /tmp/smapi.zip
+          unzip -q /tmp/smapi.zip -d /tmp/smapi
+          find /tmp/smapi -name "StardewModdingAPI.dll" | head -1 | xargs -I{} cp {} /tmp/sdv/
+          find /tmp/smapi -name "*.dll" | xargs -I{} cp {} /tmp/sdv/smapi-internal/ 2>/dev/null || true
       - name: Build
         run: |
-          mkdir -p /tmp/sdv
-          touch "/tmp/sdv/Stardew Valley.dll"
           cd UIInfoSuite2Alt-main/UIInfoSuite2Alt
           dotnet build -c Release /p:GamePath=/tmp/sdv
       - uses: actions/upload-artifact@v4
